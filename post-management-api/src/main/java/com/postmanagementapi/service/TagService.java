@@ -1,8 +1,10 @@
 package com.postmanagementapi.service;
 
 import com.postmanagementapi.heplper.exception.ResourceNotFoundException;
+import com.postmanagementapi.model.Post;
 import com.postmanagementapi.model.Tag;
 import com.postmanagementapi.model.dto.response.TagResponseDTO;
+import com.postmanagementapi.repository.PostRepository;
 import com.postmanagementapi.repository.TagRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ public class TagService {
 
 
     private final TagRepository tagRepository;
+    private final PostRepository postRepository;
 
     public TagResponseDTO convertTagToDTO(Tag tag){
         return TagResponseDTO.builder()
@@ -32,7 +35,7 @@ public class TagService {
 
     public List<TagResponseDTO> getAllTag(){
         List<TagResponseDTO> tags = this.tagRepository.findAll().stream()
-                                    .map(tag -> convertTagToDTO(tag)).collect(Collectors.toList());
+             .map(tag -> convertTagToDTO(tag)).collect(Collectors.toList());
         return tags;
     }
 
@@ -58,6 +61,18 @@ public class TagService {
     }
 
     public void deleteTag(long id) {
+
+        Tag tag = this.tagRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tag với id: " + id));
+
+        List<Post> posts = this.postRepository.findByTagsContains(tag);
+
+        for (Post post : posts){
+            post.getTags().remove(tag);
+
+            this.postRepository.save(post);
+        }
+
+
         this.tagRepository.deleteById(id);
     }
 }
