@@ -2,14 +2,17 @@ package com.postmanagementapi.controller;
 
 import com.postmanagementapi.heplper.ApiResponse;
 import com.postmanagementapi.model.Tag;
+import com.postmanagementapi.model.dto.request.TagFilterRequestDTO;
+import com.postmanagementapi.model.dto.response.PageResponse;
 import com.postmanagementapi.model.dto.response.TagResponseDTO;
 import com.postmanagementapi.service.TagService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -18,10 +21,14 @@ public class TagController {
     private final TagService tagService;
 
     @GetMapping("/tags")
-    public ResponseEntity<ApiResponse<List<TagResponseDTO>>> getAllTag(){
-        List<TagResponseDTO> tags = this.tagService.getAllTag();
+    public ResponseEntity<ApiResponse<PageResponse<TagResponseDTO>>> getAllTag(
+            Pageable pageable,
+            TagFilterRequestDTO tagFilter
 
-        return ApiResponse.success(tags);
+    ){
+        Page<TagResponseDTO> tags = this.tagService.getAllTag(pageable,tagFilter);
+
+        return ApiResponse.success(PageResponse.from(tags));
     }
 
     @GetMapping("/tag/{id}")

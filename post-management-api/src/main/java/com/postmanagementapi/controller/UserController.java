@@ -2,10 +2,14 @@ package com.postmanagementapi.controller;
 
 import com.postmanagementapi.heplper.ApiResponse;
 import com.postmanagementapi.model.User;
+import com.postmanagementapi.model.dto.request.UserFilterRequestDTO;
+import com.postmanagementapi.model.dto.response.PageResponse;
 import com.postmanagementapi.model.dto.response.UserResponseDTO;
 import com.postmanagementapi.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -19,9 +23,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUser(){
-        List<UserResponseDTO> userList = this.userService.getAllUser();
-        return ApiResponse.success(userList);
+    public ResponseEntity<ApiResponse<PageResponse<UserResponseDTO>>> getAllUser(
+            Pageable pageable,
+            UserFilterRequestDTO requestFilter
+    ){
+        Page<UserResponseDTO> userList = this.userService.getAllUser(pageable,requestFilter);
+        return ApiResponse.success(PageResponse.from(userList));
     }
 
     @GetMapping("/user/{id}")
@@ -41,7 +48,6 @@ public class UserController {
         return ApiResponse.success(userResponseDTO,"Tạo mới User thành công");
     }
 
-//    Tối về viết api full User và full app
     @PutMapping("/user/{id}")
     public ResponseEntity<ApiResponse<UserResponseDTO>> UpdateUser(
             @PathVariable long id,
@@ -62,7 +68,6 @@ public class UserController {
       this.userService.deleteUser(id);
 
       return ApiResponse.success("Xóa User thành công");
-
     }
 
 }

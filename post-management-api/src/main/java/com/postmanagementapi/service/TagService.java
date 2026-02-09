@@ -3,10 +3,15 @@ package com.postmanagementapi.service;
 import com.postmanagementapi.heplper.exception.ResourceNotFoundException;
 import com.postmanagementapi.model.Post;
 import com.postmanagementapi.model.Tag;
+import com.postmanagementapi.model.dto.request.TagFilterRequestDTO;
 import com.postmanagementapi.model.dto.response.TagResponseDTO;
 import com.postmanagementapi.repository.PostRepository;
 import com.postmanagementapi.repository.TagRepository;
+import com.postmanagementapi.service.specification.TagSpecification;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,9 +38,25 @@ public class TagService {
                 .build();
     }
 
-    public List<TagResponseDTO> getAllTag(){
-        List<TagResponseDTO> tags = this.tagRepository.findAll().stream()
-             .map(tag -> convertTagToDTO(tag)).collect(Collectors.toList());
+    public Page<TagResponseDTO> getAllTag(
+            Pageable pageable,
+            TagFilterRequestDTO tagFilter
+    ){
+
+        String nameType = "fafsfs";
+
+
+        Specification<Tag> specs = Specification.allOf(
+                "like".equalsIgnoreCase(nameType)
+                        ? TagSpecification.hasNameLike(tagFilter)
+                        : TagSpecification.hasName(tagFilter)
+        );
+
+        Page<TagResponseDTO> tags = this.tagRepository.findAll(specs,pageable).map(
+                tag -> {
+                    return  new TagResponseDTO(tag.getId(),tag.getName(),null);
+                }
+        );
         return tags;
     }
 
